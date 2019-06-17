@@ -12,9 +12,21 @@ const io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-io.on('connection', (socket) => {
+io.on('connection', function (socket) {
     console.log('New user connected');
-    socket.on('disconnect', (socket) => {
+
+    socket.emit('newMessage', {
+        from: 'user',
+        text: 'hi there',
+        createdAt: 123
+    })
+
+    socket.on('createMessage', (newMessage) => {
+        newMessage.createdAt = new Date();
+        console.log('createMessage', newMessage)
+    })
+
+    socket.on('disconnect', function (socket) {
         console.log('User was disconnected');
     })
 })
