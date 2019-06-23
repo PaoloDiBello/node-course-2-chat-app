@@ -1,52 +1,39 @@
-const express = require('express');
 const path = require('path');
-const http = require('http')
-const socketIO = require('socket.io')
+const http = require('http');
+const express = require('express');
+const socketIO = require('socket.io');
 
-const publicPath = path.join(__dirname + "/../public")
-console.log(path.join(__dirname + "/../public"));
-
-const app = express();
+const { generateMessage, generateLocationMessage } = require('./utils/message');
+const publicPath = path.join(__dirname, '../public');
+const port = process.env.PORT || 3000;
+var app = express();
 var server = http.createServer(app);
-const io = socketIO(server);
-
-const { generateMessage } = require('./utils/message')
+var io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-io.on('connection', function (socket) {
+io.on('connection', (socket) => {
     console.log('New user connected');
 
-    // socket.emit from admin Welcome to the chat app
-    // socket.broadcast.emit from Admin text New user joined
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
-    socket.emit('newMessage', generateMessage('admin', 'Welcome to the Chat App!'))
-
-    socket.broadcast.emit('newMessage', generateMessage('admin', 'New user joined the Chat App!'))
-
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
     socket.on('createMessage', (message, callback) => {
-        console.log('createMessage', message)
+        console.log('createMessage', message);
+        io.emit('newMessage', generateMessage(message.from, message.text));
+        callback('This is from the server.');
+    });
 
-        io.emit('newMessage', generateMessage(message.from, message.text))
+    socket.on('createLocationMessage', (coords) => {
+        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+    });
 
-        callback('This is form the server');
+    socket.on('disconnect', () => {
+        console.log('User was disconnected');
+    });
+});
 
-        //     socket.broadcast.emit(
-        //         'newMessage',
-        //         {
-        //             from: message.from,
-        //             text: message.text,
-        //             createdAt: new Date().getTime()
-        //         })
-
-        socket.on('disconnect', function (socket) {
-            console.log('User was disconnected');
-        })
-    })
-
-})
-
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server Running On Port ${PORT}`))
+server.listen(port, () => {
+    console.log(`Server is up on ${port}`);
+});
