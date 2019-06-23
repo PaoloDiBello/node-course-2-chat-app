@@ -28,17 +28,19 @@ socket.on('newLocationMessage', function (message) {
 
 $('#message-form').on('submit', function (e) {
     e.preventDefault();
-
+    const message = $('[name=message]');
+    if (!message.val()) { return }
     socket.emit('createMessage', {
         from: 'User',
-        text: $('[name=message]').val()
+        text: message.val()
     }, function () {
-        $('[name=message]').val('')
+        message.val('')
     });
 });
 
 var locationButton = $('#send-location');
 locationButton.on('click', function () {
+    locationButton.prop('disabled', true).text('Sending location...');
     fetch('https://api.ipdata.co/?api-key=test')
         .then(res => res.json()
             .then(res => {
@@ -46,6 +48,7 @@ locationButton.on('click', function () {
                     latitude: res.latitude,
                     longitude: res.longitude
                 });
+                locationButton.prop('disabled', false).text('Send location')
             })
         )
 
