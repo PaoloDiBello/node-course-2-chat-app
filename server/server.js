@@ -23,6 +23,12 @@ io.on('connection', (socket) => {
         if (!isRealString(params.name) || !isRealString(params.room)) {
             return callback('Name and room name are required.')
         }
+        else {
+
+            if (users.getUserList(params.room).includes(params.name)) {
+                return callback('User already exists.')
+            }
+        }
 
         socket.join(params.room);
         users.removeUser(socket.id)

@@ -26,6 +26,7 @@ socket.on('connect', function () {
         } else {
             console.log('No error');
         }
+
     });
     console.log('Connected to server');
 });
