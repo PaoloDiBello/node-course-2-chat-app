@@ -1,4 +1,3 @@
-
 var socket = io();
 
 function scrollToBottom() {
@@ -18,12 +17,31 @@ function scrollToBottom() {
 }
 
 socket.on('connect', function () {
+    var params = $.deparam(window.location.search);
+    socket.emit('join', params, function (err) {
+        if (err) {
+            alert(err);
+            window.location.href = '/'
+        } else {
+            console.log('No error');
+        }
+    });
     console.log('Connected to server');
 });
 
 socket.on('disconnect', function () {
     console.log('Disconnected from server');
 });
+
+socket.on('updateUserList', function (users) {
+    console.log('users', users)
+    var ol = $('<ol></ol>')
+    users.forEach(function (user) {
+        ol.append($('<li></li>').text(user))
+    })
+
+    $('#users').html(ol);
+})
 
 socket.on('newMessage', function (message) {
     console.log('newMessage', message);
